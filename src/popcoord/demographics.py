@@ -2,15 +2,17 @@
 
 from __future__ import annotations
 
-from popcoord.core import validate_inputs
+from typing import Optional
+
+from popcoord.core import MAX_YEAR, validate_inputs
 from popcoord.models import DemographicResult
 
 
 def demographics(
     lat: float,
     lon: float,
-    radius_km: float,
-    year: int = 2020,
+    radius_km: float = 5.0,
+    year: Optional[int] = None,
     *,
     backend: str = "api",
 ) -> DemographicResult:
@@ -21,19 +23,22 @@ def demographics(
     ----------
     lat, lon : float
         WGS-84 decimal degrees. ``lat`` in [-90, 90], ``lon`` in [-180, 180].
-    radius_km : float
+        **These are the only required arguments.**
+    radius_km : float, default 5.0
         Search radius in kilometres (must be > 0).
-    year : int, default 2020
-        Reference year. Both backends cover 2000–2020; values outside
-        this range are clamped to 2020.
+    year : int, optional
+        Reference year. Defaults to 2020 (latest available). Both backends
+        cover 2000–2020; values outside this range are clamped.
 
-        Note: WorldPop does publish 2021–2022 age-sex rasters, but they
-        use a different age-band schema (21 bands vs. 18) and cannot be
-        merged with the 2000–2020 series transparently.
+        Note: WorldPop 2021–2022 age-sex rasters use a different band schema
+        (21 bands vs. 18) and are not merged into this series.
     backend : ``"api"`` | ``"raster"``, default ``"api"``
         * ``"api"`` — single HTTP request to WorldPop stats API.
         * ``"raster"`` — reads 36 COG rasters (one per sex × age group).
           More reliable but slower.
+
+        GHS-POP does not provide age/sex breakdowns; use ``population()``
+        with ``backend='ghspop'`` for historical total-population queries.
 
     Returns
     -------
@@ -41,16 +46,10 @@ def demographics(
         Contains ``.total``, ``.male``, ``.female``, ``.age_groups`` dict,
         plus convenience properties like ``.sex_ratio``,
         ``.dependency_ratio``, and ``.median_age_bucket``.
-
-    Examples
-    --------
-    >>> demo = demographics(lat=51.51, lon=-0.13, radius_km=15, year=2020)
-    >>> print(demo.male)
-    4_567_890
-    >>> print(demo.age_groups["20_24"])
-    AgeGroup('20_24', total=456789, m=228000, f=228789)
-    >>> print(demo.summary())
     """
+    if year is None:
+        year = MAX_YEAR
+
     validate_inputs(lat, lon, radius_km, year)
 
     if backend == "api":
@@ -61,5 +60,10 @@ def demographics(
         from popcoord.sources.worldpop_cog import raster_demographics
 
         return raster_demographics(lat, lon, radius_km, year)
+    elif backend == "ghspop":
+        raise ValueError(
+            "GHS-POP does not provide age-sex data. "
+            "Use backend='api' or backend='raster' for demographics."
+        )
     else:
         raise ValueError(f"Unknown backend {backend!r}. Use 'api' or 'raster'.")

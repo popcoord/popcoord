@@ -17,6 +17,11 @@ MIN_YEAR = 2000
 MAX_YEAR = 2020       # API backend + demographics raster
 MAX_YEAR_RASTER = 2022  # Population raster extended with 2021-2022 UN-adj mosaics
 
+# GHS-POP 5-year epochs (1975–2020 observed; 2025/2030 projected)
+GHSPOP_EPOCHS = [1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010, 2015, 2020, 2025, 2030]
+GHSPOP_MIN_YEAR = 1975
+GHSPOP_MAX_YEAR = 2020  # default to latest *observed* epoch
+
 # Age-group codes used by WorldPop and their human-readable labels.
 # Keys are the WorldPop filename codes; values are our canonical labels.
 AGE_CODES: Dict[str, str] = {

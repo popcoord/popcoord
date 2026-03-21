@@ -2,13 +2,18 @@
 
 Query population, demographics, and density for any coordinate + radius on Earth.
 
-Powered by [WorldPop](https://www.worldpop.org/) open data (CC BY 4.0).
+```python
+import popcoord
+
+# Only lat and lon are required — everything else has sensible defaults
+pop = popcoord.population(52.37, 4.90)   # Amsterdam, 5 km radius, latest year
+```
 
 ## Install
 
 ```bash
-pip install popcoord                # API backend (lightweight)
-pip install popcoord[raster]        # + raster backend (adds rasterio)
+pip install popcoord                # API + GHS-POP backends (lightweight)
+pip install popcoord[raster]        # + WorldPop raster backend (adds rasterio)
 ```
 
 ## Quick Start
@@ -16,15 +21,17 @@ pip install popcoord[raster]        # + raster backend (adds rasterio)
 ```python
 import popcoord
 
-# Total population within 10 km of Amsterdam
-pop = popcoord.population(lat=52.38, lon=4.90, radius_km=10, year=2020)
-print(pop.total)  # estimated headcount
+# Minimal: just coordinates — defaults to 5 km radius, latest available year
+pop = popcoord.population(52.37, 4.90)
+print(pop.total)        # ~450,000
+print(pop.year)         # 2020
+print(pop.radius_km)    # 5.0
 
 # Age × sex breakdown (18 age groups, male/female split)
-demo = popcoord.demographics(lat=52.38, lon=4.90, radius_km=10, year=2020)
+demo = popcoord.demographics(51.51, -0.13)   # London
 print(demo.male, demo.female)
 print(demo.sex_ratio)          # male / female
-print(demo.dependency_ratio)   # (0-14 + 65+) / 15-64
+print(demo.dependency_ratio)   # (0–14 + 65+) / 15–64
 print(demo.median_age_bucket)  # e.g. '35_39'
 print(demo.summary())          # full printable breakdown
 
@@ -33,11 +40,15 @@ for label, ag in demo.age_groups.items():
     print(f"{label}: total={ag.total:.0f}, m={ag.male:.0f}, f={ag.female:.0f}")
 
 # Population density (persons/km²)
-d = popcoord.density(lat=52.38, lon=4.90, radius_km=10, year=2020, backend="raster")
+d = popcoord.density(40.71, -74.01)   # New York
 print(d.mean_density, d.max_density)
+
+# Historical population back to 1975 via GHS-POP (any year snapped to nearest epoch)
+hist = popcoord.population(39.91, 116.39, year=1980, backend="ghspop")  # Beijing
+print(f"Beijing 1980: {hist.total:,.0f}")   # year was snapped to 1980
 ```
 
-📓 **See [demo.ipynb](demo.ipynb) for comprehensive examples** including city comparisons, historical trends, and more.
+📓 **See [demo.ipynb](demo.ipynb) for comprehensive examples** including city comparisons, historical trends back to 1975, and backend comparisons.
 
 ## Functions
 
@@ -49,36 +60,38 @@ print(d.mean_density, d.max_density)
 
 ## Parameters
 
-All functions accept the following parameters:
+`lat` and `lon` are the only **required** arguments. Everything else is optional:
 
 | Parameter | Type | Valid Values | Default | Description |
 | --- | --- | --- | --- | --- |
-| `lat` | `float` | `-90` to `90` | *required* | Latitude in WGS-84 decimal degrees |
-| `lon` | `float` | `-180` to `180` | *required* | Longitude in WGS-84 decimal degrees |
-| `radius_km` | `float` | `> 0` | *required* | Search radius in kilometres |
-| `year` | `int` | see below | `2020` | Reference year (clamped per function — see Year Ranges) |
-| `backend` | `str` | `"api"` or `"raster"` | `"api"`* | Data source backend |
+| `lat` | `float` | `-90` to `90` | **required** | Latitude (WGS-84 decimal degrees) |
+| `lon` | `float` | `-180` to `180` | **required** | Longitude (WGS-84 decimal degrees) |
+| `radius_km` | `float` | `> 0` | `5.0` | Search radius in kilometres |
+| `year` | `int` | see Year Ranges | latest for backend | Reference year; clamped/snapped automatically |
+| `backend` | `str` | `"api"`, `"raster"`, `"ghspop"` | `"api"` † | Data source backend |
 
-\* Note: `density()` defaults to `"raster"` backend for pixel-level detail.
+† `density()` defaults to `"raster"` for pixel-level min/max/mean.
 
 ## Year Ranges
 
-Year coverage differs by function and backend:
+Year coverage differs by function and backend. Out-of-range years are automatically clamped or snapped.
 
-| Function | `"api"` backend | `"raster"` backend |
-| --- | --- | --- |
-| `population()` | 2000–2020 | **2000–2022** (2021–2022 use UN-adjusted mosaic) |
-| `demographics()` | 2000–2020 | 2000–2020 |
-| `density()` | 2000–2020 | 2000–2020 |
+| Function | `"api"` | `"raster"` | `"ghspop"` |
+| --- | --- | --- | --- |
+| `population()` | 2000–2020 | 2000–2022 ‡ | **1975–2030** § |
+| `demographics()` | 2000–2020 | 2000–2020 | not supported |
+| `density()` | 2000–2020 | 2000–2022 ‡ | **1975–2030** § |
 
-Years outside the supported range for a given function/backend are automatically clamped to the nearest valid year. The 2021–2022 age-sex rasters use a different band schema (21 bands vs. 18) and are not yet merged into the demographics series.
+‡ 2021–2022 use the UN-adjusted mosaic; age-sex at these years uses a different schema and is not supported.  
+§ GHS-POP epochs are every 5 years (1975, 1980, …, 2020, 2025, 2030). Any year is snapped to the nearest epoch. 2025 and 2030 are modelled projections; 1975–2020 are calibrated estimates.
 
 ## Backends
 
-| Backend | Install | Best for |
-| --- | --- | --- |
-| `"api"` (default) | `pip install popcoord` | Quick queries, lightweight environments |
-| `"raster"` | `pip install popcoord[raster]` | Pixel-level detail, offline caching |
+| Backend | Install | Year range | Best for |
+| --- | --- | --- | --- |
+| `"api"` (default) | `pip install popcoord` | 2000–2020 | Quick queries, no extra dependencies |
+| `"raster"` | `pip install popcoord[raster]` | 2000–2022 | Pixel-level detail (min/max/mean density) |
+| `"ghspop"` | `pip install popcoord[raster]` | **1975–2030** | Historical & projected population |
 
 ## Age groups
 
@@ -88,17 +101,20 @@ Years outside the supported range for a given function/backend are automatically
 
 Each age group returns an `AgeGroup` object with `.total`, `.male`, and `.female` attributes.
 
-## Data
+## Data Sources
 
-- **Source:** WorldPop open data (CC BY 4.0) — [worldpop.org](https://www.worldpop.org/)
-- **Coverage:** Global
-- **Resolution:** ~1 km (30 arc-seconds) — the maximum resolution for streamable global mosaics; 100 m rasters exist but only as per-country files with no global mosaic
-- **Population (`"raster"` backend):** 2000–2022
-  - 2000–2020: unconstrained global mosaic (`ppp_{year}_1km_Aggregated.tif`)
-  - 2021–2022: UN-adjusted global mosaic (`global_ppp_{year}_1km_UNadj.tif`)
-- **Demographics / density:** 2000–2020 (both backends)
-- **Projections:** WorldPop publishes 2015–2030 projected data (R2025A release), but these are per-country files only with no streamable global mosaic — not currently supported
-- **License:** [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — please cite [worldpop.org](https://www.worldpop.org/)
+### WorldPop (`"api"` and `"raster"` backends)
+- **Source:** [worldpop.org](https://www.worldpop.org/) — CC BY 4.0
+- **Resolution:** ~1 km (30 arc-seconds) global mosaics
+- **Population raster:** 2000–2020 unconstrained + 2021–2022 UN-adjusted mosaics
+- **Demographics raster:** 2000–2020 (18 age-sex bands)
+
+### JRC GHS-POP (`"ghspop"` backend)
+- **Source:** [JRC Global Human Settlement Layer](https://ghsl.jrc.ec.europa.eu/) — European Commission open-data licence
+- **Dataset:** GHS_POP_GLOBE_R2023A (WGS84, 30 arc-second / ~1 km)
+- **Epochs:** 1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010, 2015, 2020, 2025, 2030
+- **Note:** Total population only (no age/sex breakdown). 2025 and 2030 are modelled projections.
+- **Access:** Tile ZIPs (~1–5 MB each) downloaded on demand; only tiles covering the query area are fetched.
 
 ## License
 
