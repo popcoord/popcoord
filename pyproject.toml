@@ -1,0 +1,48 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "popcoord"
+version = "0.1.0"
+description = "Query population & demographics for any point + radius on Earth using WorldPop data"
+readme = "README.md"
+license = "AGPL-3.0-or-later"
+requires-python = ">=3.9"
+authors = [{ name = "popcoord contributors" }]
+keywords = ["population", "demographics", "geospatial", "worldpop", "gis"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: GIS",
+]
+
+dependencies = [
+    "numpy>=1.22",
+    "requests>=2.28",
+]
+
+[project.optional-dependencies]
+raster = ["rasterio>=1.3"]
+all = ["rasterio>=1.3"]
+dev = ["pytest>=7", "rasterio>=1.3"]
+
+[project.urls]
+Homepage = "https://github.com/popcoord/popcoord"
+Documentation = "https://github.com/popcoord/popcoord#readme"
+Repository = "https://github.com/popcoord/popcoord"
+Issues = "https://github.com/popcoord/popcoord/issues"
+Changelog = "https://github.com/popcoord/popcoord/blob/main/CHANGELOG.md"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/popcoord"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
