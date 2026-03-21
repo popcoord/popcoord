@@ -56,10 +56,22 @@ All functions accept the following parameters:
 | `lat` | `float` | `-90` to `90` | *required* | Latitude in WGS-84 decimal degrees |
 | `lon` | `float` | `-180` to `180` | *required* | Longitude in WGS-84 decimal degrees |
 | `radius_km` | `float` | `> 0` | *required* | Search radius in kilometres |
-| `year` | `int` | `2000` to `2020` | `2020` | Reference year (values outside range are clamped) |
+| `year` | `int` | see below | `2020` | Reference year (clamped per function — see Year Ranges) |
 | `backend` | `str` | `"api"` or `"raster"` | `"api"`* | Data source backend |
 
 \* Note: `density()` defaults to `"raster"` backend for pixel-level detail.
+
+## Year Ranges
+
+Year coverage differs by function and backend:
+
+| Function | `"api"` backend | `"raster"` backend |
+| --- | --- | --- |
+| `population()` | 2000–2020 | **2000–2022** (2021–2022 use UN-adjusted mosaic) |
+| `demographics()` | 2000–2020 | 2000–2020 |
+| `density()` | 2000–2020 | 2000–2020 |
+
+Years outside the supported range for a given function/backend are automatically clamped to the nearest valid year. The 2021–2022 age-sex rasters use a different band schema (21 bands vs. 18) and are not yet merged into the demographics series.
 
 ## Backends
 
@@ -78,8 +90,14 @@ Each age group returns an `AgeGroup` object with `.total`, `.male`, and `.female
 
 ## Data
 
-- **Source:** WorldPop unconstrained global mosaics (~1 km resolution)
-- **Coverage:** Global, years 2000–2020
+- **Source:** WorldPop open data (CC BY 4.0) — [worldpop.org](https://www.worldpop.org/)
+- **Coverage:** Global
+- **Resolution:** ~1 km (30 arc-seconds) — the maximum resolution for streamable global mosaics; 100 m rasters exist but only as per-country files with no global mosaic
+- **Population (`"raster"` backend):** 2000–2022
+  - 2000–2020: unconstrained global mosaic (`ppp_{year}_1km_Aggregated.tif`)
+  - 2021–2022: UN-adjusted global mosaic (`global_ppp_{year}_1km_UNadj.tif`)
+- **Demographics / density:** 2000–2020 (both backends)
+- **Projections:** WorldPop publishes 2015–2030 projected data (R2025A release), but these are per-country files only with no streamable global mosaic — not currently supported
 - **License:** [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — please cite [worldpop.org](https://www.worldpop.org/)
 
 ## License

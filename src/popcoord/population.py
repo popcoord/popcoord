@@ -19,12 +19,15 @@ def population(
     Parameters
     ----------
     lat, lon : float
-        WGS-84 decimal degrees.
+        WGS-84 decimal degrees. ``lat`` in [-90, 90], ``lon`` in [-180, 180].
     radius_km : float
-        Search radius in kilometres.
+        Search radius in kilometres (must be > 0).
     year : int, default 2020
-        Reference year (WorldPop covers 2000–2020; values outside this
-        range are clamped).
+        Reference year.
+
+        * ``"api"`` backend: 2000–2020 (clamped to this range).
+        * ``"raster"`` backend: 2000–2022 (2021–2022 use the UN-adjusted
+          mosaic; values outside this range are clamped).
     backend : ``"api"`` | ``"raster"``, default ``"api"``
         * ``"api"`` — uses the WorldPop REST API (lightweight, needs
           only ``requests``).

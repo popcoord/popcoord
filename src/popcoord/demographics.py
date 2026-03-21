@@ -20,11 +20,16 @@ def demographics(
     Parameters
     ----------
     lat, lon : float
-        WGS-84 decimal degrees.
+        WGS-84 decimal degrees. ``lat`` in [-90, 90], ``lon`` in [-180, 180].
     radius_km : float
-        Search radius in kilometres.
+        Search radius in kilometres (must be > 0).
     year : int, default 2020
-        Reference year (2000–2020; clamped if outside range).
+        Reference year. Both backends cover 2000–2020; values outside
+        this range are clamped to 2020.
+
+        Note: WorldPop does publish 2021–2022 age-sex rasters, but they
+        use a different age-band schema (21 bands vs. 18) and cannot be
+        merged with the 2000–2020 series transparently.
     backend : ``"api"`` | ``"raster"``, default ``"api"``
         * ``"api"`` — single HTTP request to WorldPop stats API.
         * ``"raster"`` — reads 36 COG rasters (one per sex × age group).

@@ -5,10 +5,14 @@ file downloads.  Requires the ``rasterio`` optional dependency::
 
     pip install popcoord[raster]
 
-Datasets (1 km global mosaics, 2000–2020):
-    Total population   — ppp_{year}_1km_Aggregated.tif
-    Age/sex cohorts    — global_{sex}_{agegroup}_{year}_1km.tif
-    Population density — ppp_{year}_1km_Aggregated.tif (derived)
+Datasets (1 km global mosaics):
+    Total population   2000–2020 — ppp_{year}_1km_Aggregated.tif
+    Total population   2021–2022 — global_ppp_{year}_1km_UNadj.tif (UN-adjusted)
+    Age/sex cohorts    2000–2020 — global_{sex}_{agegroup}_{year}_1km.tif
+    Population density 2000–2020 — ppp_{year}_1km_Aggregated.tif (derived)
+
+Note on resolution: WorldPop global mosaics are produced at 1 km (~30 arc-sec).
+100 m per-country rasters exist but there is no streamable 100 m global mosaic.
 """
 
 from __future__ import annotations
@@ -41,14 +45,24 @@ except ImportError:
 # URL templates
 # ---------------------------------------------------------------------------
 
+# 2000-2020 unconstrained 1km total population mosaic
 _POP_URL = (
     "/vsicurl/https://data.worldpop.org/GIS/Population/"
     "Global_2000_2020/{year}/0_Mosaicked/ppp_{year}_1km_Aggregated.tif"
 )
 
+# 2021-2022 UN-adjusted 1km total population mosaic
+_POP_URL_2021_2022 = (
+    "/vsicurl/https://data.worldpop.org/GIS/Population/"
+    "Global_2021_2022_1km_UNadj/unconstrained/{year}/0_Mosaicked/"
+    "global_ppp_{year}_1km_UNadj.tif"
+)
+
+# 2000-2020 age-sex 1km global mosaics (files live in global_mosaic_1km/ subdir)
 _AGESEX_URL = (
     "/vsicurl/https://data.worldpop.org/GIS/AgeSex_structures/"
-    "Global_2000_2020/{year}/0_Mosaicked/global_{sex}_{agegroup}_{year}_1km.tif"
+    "Global_2000_2020/{year}/0_Mosaicked/global_mosaic_1km/"
+    "global_{sex}_{agegroup}_{year}_1km.tif"
 )
 
 
@@ -123,10 +137,22 @@ def raster_population(
     radius_km: float,
     year: int,
 ) -> PopulationResult:
-    """Total population from COG rasters."""
+    """Total population from COG rasters.
+
+    Supports 2000–2022.  Years 2021–2022 use the UN-adjusted mosaic
+    (``Global_2021_2022_1km_UNadj``); earlier years use the standard
+    unconstrained mosaic.  Years outside 2000–2022 are clamped.
+    """
     _require_rasterio()
-    year = clamp_year(year)
-    url = _POP_URL.format(year=year)
+    from popcoord.core import MAX_YEAR_RASTER
+    year = max(2000, min(MAX_YEAR_RASTER, year))
+
+    if year >= 2021:
+        url = _POP_URL_2021_2022.format(year=year)
+        source = f"WorldPop COG (global_ppp_{year}_1km_UNadj.tif)"
+    else:
+        url = _POP_URL.format(year=year)
+        source = f"WorldPop COG (ppp_{year}_1km_Aggregated.tif)"
 
     data, mask, _ = _read_window(url, lat, lon, radius_km)
     total = float(np.sum(data[mask])) if data is not None else 0.0
@@ -138,7 +164,7 @@ def raster_population(
         lon=lon,
         radius_km=radius_km,
         backend="raster",
-        source=f"WorldPop COG (ppp_{year}_1km_Aggregated.tif)",
+        source=source,
     )
 
 

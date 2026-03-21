@@ -14,7 +14,8 @@ EARTH_RADIUS_KM = 6371.0
 
 # WorldPop global mosaic year range
 MIN_YEAR = 2000
-MAX_YEAR = 2020
+MAX_YEAR = 2020       # API backend + demographics raster
+MAX_YEAR_RASTER = 2022  # Population raster extended with 2021-2022 UN-adj mosaics
 
 # Age-group codes used by WorldPop and their human-readable labels.
 # Keys are the WorldPop filename codes; values are our canonical labels.

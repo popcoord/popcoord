@@ -102,22 +102,36 @@ def api_demographics(
 
     data = _query_api("wpgpas", year, geojson)
 
-    # The API returns a dict with keys like "m_0", "f_0", "m_1", "f_1", etc.
-    stats = data.get("data", data)  # response shape can vary
-
+    # Parse the response - try new format first (agesexpyramid array)
+    stats = data.get("data", data)
     age_groups: Dict[str, AgeGroup] = {}
     total_m = 0.0
     total_f = 0.0
 
-    for code, label in AGE_CODES.items():
-        m_key = f"m_{code}"
-        f_key = f"f_{code}"
-        m_val = _safe_float(stats, m_key)
-        f_val = _safe_float(stats, f_key)
-        ag = AgeGroup(label=label, total=m_val + f_val, male=m_val, female=f_val)
-        age_groups[label] = ag
-        total_m += m_val
-        total_f += f_val
+    # Check if response has agesexpyramid array (newer API format)
+    if isinstance(stats, dict) and "agesexpyramid" in stats:
+        pyramid = stats["agesexpyramid"]
+        for item in pyramid:
+            code = str(item.get("class", ""))
+            if code in AGE_CODES:
+                label = AGE_CODES[code]
+                m_val = float(item.get("male", 0.0))
+                f_val = float(item.get("female", 0.0))
+                ag = AgeGroup(label=label, total=m_val + f_val, male=m_val, female=f_val)
+                age_groups[label] = ag
+                total_m += m_val
+                total_f += f_val
+    else:
+        # Fallback: old format with m_0, f_0, etc keys
+        for code, label in AGE_CODES.items():
+            m_key = f"m_{code}"
+            f_key = f"f_{code}"
+            m_val = _safe_float(stats, m_key)
+            f_val = _safe_float(stats, f_key)
+            ag = AgeGroup(label=label, total=m_val + f_val, male=m_val, female=f_val)
+            age_groups[label] = ag
+            total_m += m_val
+            total_f += f_val
 
     return DemographicResult(
         total=total_m + total_f,
