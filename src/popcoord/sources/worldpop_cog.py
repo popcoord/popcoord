@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import math
 import warnings
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Dict, Optional, Tuple
 
 import numpy as np
@@ -176,39 +177,48 @@ def raster_demographics(
 ) -> DemographicResult:
     """Age-sex breakdown from COG rasters.
 
-    Downloads one raster per sex × age-group combination (36 total).
-    Each raster is small (only the bounding-box window), but this
-    still involves 36 HTTP round-trips.  Use ``backend="api"`` if
-    speed is critical.
+    Fetches 36 rasters (18 age groups × male/female) concurrently via
+    a thread pool, reducing wall time to roughly a single HTTP round-trip
+    instead of 36 sequential ones.
     """
     _require_rasterio()
     year = clamp_year(year)
 
+    # Build the full list of (sex, code) tasks up front.
+    tasks = [
+        (sex, code)
+        for code in AGE_CODES
+        for sex in ("m", "f")
+    ]
+
+    def _fetch(sex_code: Tuple[str, str]) -> Tuple[str, str, float]:
+        sex, code = sex_code
+        url = _AGESEX_URL.format(year=year, sex=sex, agegroup=code)
+        try:
+            data, mask, _ = _read_window(url, lat, lon, radius_km)
+            val = float(np.sum(data[mask])) if data is not None else 0.0
+        except Exception as exc:
+            warnings.warn(
+                f"Could not read age-sex raster {sex}_{code} for {year}: {exc}",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+            val = 0.0
+        return sex, code, val
+
+    raw: Dict[Tuple[str, str], float] = {}
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        futures = {pool.submit(_fetch, t): t for t in tasks}
+        for fut in as_completed(futures):
+            sex, code, val = fut.result()
+            raw[(sex, code)] = val
+
     age_groups: Dict[str, AgeGroup] = {}
     total_m = 0.0
     total_f = 0.0
-
     for code, label in AGE_CODES.items():
-        m_val = 0.0
-        f_val = 0.0
-
-        for sex, var in [("m", "m_val"), ("f", "f_val")]:
-            url = _AGESEX_URL.format(year=year, sex=sex, agegroup=code)
-            try:
-                data, mask, _ = _read_window(url, lat, lon, radius_km)
-                val = float(np.sum(data[mask])) if data is not None else 0.0
-            except Exception as exc:
-                warnings.warn(
-                    f"Could not read age-sex raster {sex}_{code} for {year}: {exc}",
-                    RuntimeWarning,
-                    stacklevel=2,
-                )
-                val = 0.0
-            if sex == "m":
-                m_val = val
-            else:
-                f_val = val
-
+        m_val = raw.get(("m", code), 0.0)
+        f_val = raw.get(("f", code), 0.0)
         ag = AgeGroup(label=label, total=m_val + f_val, male=m_val, female=f_val)
         age_groups[label] = ag
         total_m += m_val
@@ -239,10 +249,19 @@ def raster_density(
     Since WorldPop provides *persons per pixel* and each pixel is ~1 km²,
     the pixel value is approximately the density in persons/km².  We also
     compute the aggregate density as total_population / circle_area.
+
+    Supports 2000–2022, matching ``raster_population``.
     """
     _require_rasterio()
-    year = clamp_year(year)
-    url = _POP_URL.format(year=year)
+    from popcoord.core import MAX_YEAR_RASTER
+    year = max(2000, min(MAX_YEAR_RASTER, year))
+
+    if year >= 2021:
+        url = _POP_URL_2021_2022.format(year=year)
+        source = f"WorldPop COG (global_ppp_{year}_1km_UNadj.tif)"
+    else:
+        url = _POP_URL.format(year=year)
+        source = f"WorldPop COG (ppp_{year}_1km_Aggregated.tif)"
 
     data, mask, _ = _read_window(url, lat, lon, radius_km)
 
@@ -268,5 +287,5 @@ def raster_density(
         lon=lon,
         radius_km=radius_km,
         backend="raster",
-        source=f"WorldPop COG (ppp_{year}_1km_Aggregated.tif)",
+        source=source,
     )

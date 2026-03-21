@@ -21,7 +21,7 @@ import io
 import math
 import warnings
 import zipfile
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import requests
@@ -65,6 +65,17 @@ GHSPOP_MIN_YEAR: int = 1975
 GHSPOP_MAX_YEAR: int = 2020  # latest *observed* epoch; 2025/2030 are projections
 
 _REQUEST_TIMEOUT: int = 60  # seconds per tile
+
+# ---------------------------------------------------------------------------
+# Session-level tile cache
+# ---------------------------------------------------------------------------
+# Key: (row, col, epoch)  →  Value: raw ZIP bytes
+# Keeps tiles in memory for the duration of the Python session.
+# This is especially useful for time-series queries where the same tile
+# is needed for multiple epochs (e.g. Beijing 1975–2020 = 10 downloads
+# of the same tile without caching → 1 download per epoch with caching,
+# or effectively reuse for the same epoch across repeated calls).
+_TILE_BYTES_CACHE: Dict[Tuple[int, int, int], bytes] = {}
 
 
 # ---------------------------------------------------------------------------
@@ -121,19 +132,33 @@ def _fetch_tile(
 ) -> Optional["rasterio.MemoryFile"]:
     """Download a GHS-POP tile ZIP and return it as a ``rasterio.MemoryFile``.
 
+    Raw ZIP bytes are cached in ``_TILE_BYTES_CACHE`` for the lifetime of
+    the Python session, so repeated calls for the same tile (e.g. a
+    time-series loop) only hit the network once.
+
     Returns ``None`` if the tile doesn't exist (ocean / uninhabited area).
     Raises for network errors other than 404.
     """
+    cache_key = (row, col, year)
+    if cache_key in _TILE_BYTES_CACHE:
+        zip_bytes = _TILE_BYTES_CACHE[cache_key]
+    else:
+        tile_name = (
+            f"GHS_POP_E{year}_GLOBE_R2023A_4326_30ss_V1_0_R{row}_C{col}.zip"
+        )
+        url = _BASE_URL.format(year=year) + tile_name
+        resp = requests.get(url, timeout=_REQUEST_TIMEOUT)
+        if resp.status_code == 404:
+            return None
+        resp.raise_for_status()
+        zip_bytes = resp.content
+        _TILE_BYTES_CACHE[cache_key] = zip_bytes
+
     tile_name = (
         f"GHS_POP_E{year}_GLOBE_R2023A_4326_30ss_V1_0_R{row}_C{col}.zip"
     )
-    url = _BASE_URL.format(year=year) + tile_name
-    resp = requests.get(url, timeout=_REQUEST_TIMEOUT)
-    if resp.status_code == 404:
-        return None
-    resp.raise_for_status()
     tif_name = tile_name.replace(".zip", ".tif")
-    with zipfile.ZipFile(io.BytesIO(resp.content)) as zf:
+    with zipfile.ZipFile(io.BytesIO(zip_bytes)) as zf:
         with zf.open(tif_name) as f:
             return rasterio.MemoryFile(f.read())
 
