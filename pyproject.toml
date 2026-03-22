@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "popcoord"
-version = "0.1.1"
+version = "0.1.2"
 description = "Query population & demographics for any point + radius on Earth using WorldPop data"
 readme = "README.md"
 license = "AGPL-3.0-or-later"
@@ -46,7 +46,7 @@ Changelog = "https://github.com/popcoord/popcoord/blob/main/CHANGELOG.md"
 packages = ["src/popcoord"]
 
 [tool.hatch.build.targets.sdist]
-exclude = ["venv", ".venv*", "dist", "*.ipynb", "demo*"]
+exclude = ["venv", ".venv*", "dist", "*.ipynb", "demo.ipynb"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
