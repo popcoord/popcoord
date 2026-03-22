@@ -1,5 +1,9 @@
 # popcoord
 
+[![PyPI](https://img.shields.io/pypi/v/popcoord)](https://pypi.org/project/popcoord/)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![CI](https://github.com/popcoord/popcoord/actions/workflows/ci.yml/badge.svg)](https://github.com/popcoord/popcoord/actions/workflows/ci.yml)
+
 Query population, demographics, and density for any coordinate + radius on Earth.
 
 ```python
@@ -115,7 +119,3 @@ Each age group returns an `AgeGroup` object with `.total`, `.male`, and `.female
 - **Epochs:** 1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010, 2015, 2020, 2025, 2030
 - **Note:** Total population only (no age/sex breakdown). 2025 and 2030 are modelled projections.
 - **Access:** Tile ZIPs (~1–5 MB each) downloaded on demand; only tiles covering the query area are fetched.
-
-## License
-
-AGPL-3.0-or-later
