@@ -9,7 +9,8 @@ description = "Query population & demographics for any point + radius on Earth u
 readme = "README.md"
 license = "AGPL-3.0-or-later"
 requires-python = ">=3.9"
-authors = [{ name = "popcoord contributors" }]
+authors = [{ name = "Saurabh Khanna", email = "saurabhkhanna@users.noreply.github.com" }]
+maintainers = [{ name = "Saurabh Khanna", email = "saurabhkhanna@users.noreply.github.com" }]
 keywords = ["population", "demographics", "geospatial", "worldpop", "gis"]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -43,6 +44,9 @@ Changelog = "https://github.com/popcoord/popcoord/blob/main/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/popcoord"]
+
+[tool.hatch.build.targets.sdist]
+exclude = ["venv", ".venv*", "dist", "*.ipynb", "demo*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
