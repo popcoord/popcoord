@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.1 (2026-03-22)
+
+- Fix broken demo.ipynb link on PyPI page (use absolute GitHub URL)
+- Add PyPI, license, and CI badges to README
+
 ## 0.1.0 (2026-03-21)
 
 Initial release.
