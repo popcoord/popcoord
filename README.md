@@ -52,7 +52,7 @@ hist = popcoord.population(39.91, 116.39, year=1980, backend="ghspop")  # Beijin
 print(f"Beijing 1980: {hist.total:,.0f}")   # year was snapped to 1980
 ```
 
-📓 **See [demo.ipynb](demo.ipynb) for comprehensive examples** including city comparisons, historical trends back to 1975, and backend comparisons.
+📓 **See [demo.ipynb](https://github.com/popcoord/popcoord/blob/main/demo.ipynb) for comprehensive examples** including city comparisons, historical trends back to 1975, and backend comparisons.
 
 ## Functions
 
