@@ -1,13 +1,13 @@
 """WorldPop REST API backend.
 
 Sends a GeoJSON polygon (circle) to the WorldPop stats API and parses the
-JSON response.  No heavy geospatial dependencies required — only `requests`.
+JSON response.  No heavy geospatial dependencies required; only `requests` needed.
 
 API docs: https://www.worldpop.org/sdi/advancedapi/
 
 Datasets:
-    wpgppop  — total population (2000–2020)
-    wpgpas   — age-sex structures (2000–2020)
+    wpgppop: total population (2000-2020)
+    wpgpas:  age-sex structures (2000-2020)
 """
 
 from __future__ import annotations

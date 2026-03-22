@@ -1,4 +1,4 @@
-"""Tests for popcoord — core helpers and model objects."""
+"""Tests for popcoord: core helpers and model objects."""
 
 import math
 import pytest
@@ -180,7 +180,7 @@ class TestDensityResult:
 
 
 # ---------------------------------------------------------------------------
-# Backend dispatch tests (no network — just verify routing)
+# Backend dispatch tests (no network; just verify routing)
 # ---------------------------------------------------------------------------
 
 class TestBackendDispatch:

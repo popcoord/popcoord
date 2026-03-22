@@ -1,15 +1,15 @@
 """WorldPop Cloud Optimized GeoTIFF backend.
 
-Reads only the spatial window needed via HTTP range requests — no full
+Reads only the spatial window needed via HTTP range requests; no full
 file downloads.  Requires the ``rasterio`` optional dependency::
 
     pip install popcoord[raster]
 
 Datasets (1 km global mosaics):
-    Total population   2000–2020 — ppp_{year}_1km_Aggregated.tif
-    Total population   2021–2022 — global_ppp_{year}_1km_UNadj.tif (UN-adjusted)
-    Age/sex cohorts    2000–2020 — global_{sex}_{agegroup}_{year}_1km.tif
-    Population density 2000–2020 — ppp_{year}_1km_Aggregated.tif (derived)
+    Total population   2000-2020: ppp_{year}_1km_Aggregated.tif
+    Total population   2021-2022: global_ppp_{year}_1km_UNadj.tif (UN-adjusted)
+    Age/sex cohorts    2000-2020: global_{sex}_{agegroup}_{year}_1km.tif
+    Population density 2000-2020: ppp_{year}_1km_Aggregated.tif (derived)
 
 Note on resolution: WorldPop global mosaics are produced at 1 km (~30 arc-sec).
 100 m per-country rasters exist but there is no streamable 100 m global mosaic.

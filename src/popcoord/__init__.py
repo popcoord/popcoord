@@ -1,10 +1,10 @@
 """
-popcoord — Query population & demographics for any coordinate + radius on Earth.
+popcoord: Query population & demographics for any coordinate + radius on Earth.
 
 Uses WorldPop open data (https://www.worldpop.org/).  Two backends:
 
-* **api** (default) — lightweight, uses WorldPop REST API, needs only `requests`.
-* **raster** — reads Cloud-Optimized GeoTIFFs via HTTP range requests, needs `rasterio`.
+* **api** (default): lightweight, uses WorldPop REST API, needs only `requests`.
+* **raster**: reads Cloud-Optimized GeoTIFFs via HTTP range requests, needs `rasterio`.
 
 Quick start
 -----------

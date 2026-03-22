@@ -33,9 +33,9 @@ def population(
         * ``"raster"`` backend: 2000–2022 (2021–2022 use UN-adjusted mosaic)
         * ``"ghspop"`` backend: snapped to nearest 5-year epoch (1975–2030)
     backend : ``"api"`` | ``"raster"`` | ``"ghspop"``, default ``"api"``
-        * ``"api"`` — WorldPop REST API. Lightweight; needs only ``requests``.
-        * ``"raster"`` — WorldPop Cloud-Optimized GeoTIFFs. Needs ``rasterio``.
-        * ``"ghspop"`` — JRC GHS-POP 1975–2030. Needs ``rasterio``.
+        * ``"api"``: WorldPop REST API. Lightweight; needs only ``requests``.
+        * ``"raster"``: WorldPop Cloud-Optimized GeoTIFFs. Needs ``rasterio``.
+        * ``"ghspop"``: JRC GHS-POP 1975-2030. Needs ``rasterio``.
           Extends coverage back to 1975 (per decade before 2000).
           2025 and 2030 epochs are modelled projections.
 

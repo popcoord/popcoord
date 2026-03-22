@@ -5,7 +5,7 @@ Query population, demographics, and density for any coordinate + radius on Earth
 ```python
 import popcoord
 
-# Only lat and lon are required — everything else has sensible defaults
+# Only lat and lon are required; everything else has sensible defaults
 pop = popcoord.population(52.37, 4.90)   # Amsterdam, 5 km radius, latest year
 ```
 
@@ -21,7 +21,7 @@ pip install popcoord[raster]        # + WorldPop raster backend (adds rasterio)
 ```python
 import popcoord
 
-# Minimal: just coordinates — defaults to 5 km radius, latest available year
+# Minimal: just coordinates; defaults to 5 km radius, latest available year
 pop = popcoord.population(52.37, 4.90)
 print(pop.total)        # ~450,000
 print(pop.year)         # 2020
@@ -104,13 +104,13 @@ Each age group returns an `AgeGroup` object with `.total`, `.male`, and `.female
 ## Data Sources
 
 ### WorldPop (`"api"` and `"raster"` backends)
-- **Source:** [worldpop.org](https://www.worldpop.org/) — CC BY 4.0
+- **Source:** [worldpop.org](https://www.worldpop.org/) (CC BY 4.0)
 - **Resolution:** ~1 km (30 arc-seconds) global mosaics
 - **Population raster:** 2000–2020 unconstrained + 2021–2022 UN-adjusted mosaics
 - **Demographics raster:** 2000–2020 (18 age-sex bands)
 
 ### JRC GHS-POP (`"ghspop"` backend)
-- **Source:** [JRC Global Human Settlement Layer](https://ghsl.jrc.ec.europa.eu/) — European Commission open-data licence
+- **Source:** [JRC Global Human Settlement Layer](https://ghsl.jrc.ec.europa.eu/) (European Commission open-data licence)
 - **Dataset:** GHS_POP_GLOBE_R2023A (WGS84, 30 arc-second / ~1 km)
 - **Epochs:** 1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010, 2015, 2020, 2025, 2030
 - **Note:** Total population only (no age/sex breakdown). 2025 and 2030 are modelled projections.

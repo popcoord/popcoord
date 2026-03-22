@@ -1,8 +1,8 @@
-"""JRC Global Human Settlement Layer — Population (GHS-POP) backend.
+"""JRC Global Human Settlement Layer - Population (GHS-POP) backend.
 
 Downloads the relevant tile ZIP(s) from JRC's open-data server and reads
 the population raster using rasterio MemoryFile.  Each tile ZIP is
-~1–5 MB — only the tile(s) covering the query bounding box are fetched.
+~1-5 MB; only the tile(s) covering the query bounding box are fetched.
 Requires the ``rasterio`` optional dependency::
 
     pip install popcoord[raster]

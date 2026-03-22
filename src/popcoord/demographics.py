@@ -33,8 +33,8 @@ def demographics(
         Note: WorldPop 2021–2022 age-sex rasters use a different band schema
         (21 bands vs. 18) and are not merged into this series.
     backend : ``"api"`` | ``"raster"``, default ``"api"``
-        * ``"api"`` — single HTTP request to WorldPop stats API.
-        * ``"raster"`` — reads 36 COG rasters (one per sex × age group).
+        * ``"api"``: single HTTP request to WorldPop stats API.
+        * ``"raster"``: reads 36 COG rasters (one per sex x age group).
           More reliable but slower.
 
         GHS-POP does not provide age/sex breakdowns; use ``population()``

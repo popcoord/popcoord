@@ -151,7 +151,7 @@ class DemographicResult:
     def summary(self) -> str:
         """Return a human-readable multi-line summary."""
         lines = [
-            f"Demographics — {self.radius_km} km around ({self.lat}, {self.lon}), year {self.year}",
+            f"Demographics: {self.radius_km} km around ({self.lat}, {self.lon}), year {self.year}",
             f"  Total population : {self.total:>12,.0f}",
             f"  Male             : {self.male:>12,.0f}",
             f"  Female           : {self.female:>12,.0f}",

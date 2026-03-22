@@ -34,9 +34,9 @@ def density(
         Reference year. Defaults to the latest available for the backend:
         2022 for ``"raster"``, 2020 for ``"api"`` and ``"ghspop"``.
     backend : ``"raster"`` (default) | ``"api"`` | ``"ghspop"``
-        * ``"raster"`` — WorldPop COG; per-pixel min/max/mean density.
-        * ``"api"`` — WorldPop REST API; mean density only (total / area).
-        * ``"ghspop"`` — JRC GHS-POP 1975–2030; mean density only.
+        * ``"raster"``: WorldPop COG; per-pixel min/max/mean density.
+        * ``"api"``: WorldPop REST API; mean density only (total / area).
+        * ``"ghspop"``: JRC GHS-POP 1975-2030; mean density only.
 
     Returns
     -------
