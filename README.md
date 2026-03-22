@@ -16,8 +16,8 @@ pop = popcoord.population(52.37, 4.90)   # Amsterdam, 5 km radius, latest year
 ## Install
 
 ```bash
-pip install popcoord                # API + GHS-POP backends (lightweight)
-pip install popcoord[raster]        # + WorldPop raster backend (adds rasterio)
+pip install popcoord                  # API + GHS-POP backends (lightweight)
+pip install "popcoord[raster]"        # + WorldPop raster backend (adds rasterio)
 ```
 
 ## Quick Start
@@ -94,8 +94,8 @@ Year coverage differs by function and backend. Out-of-range years are automatica
 | Backend | Install | Year range | Best for |
 | --- | --- | --- | --- |
 | `"api"` (default) | `pip install popcoord` | 2000–2020 | Quick queries, no extra dependencies |
-| `"raster"` | `pip install popcoord[raster]` | 2000–2022 | Pixel-level detail (min/max/mean density) |
-| `"ghspop"` | `pip install popcoord[raster]` | **1975–2030** | Historical & projected population |
+| `"raster"` | `pip install "popcoord[raster]"` | 2000–2022 | Pixel-level detail (min/max/mean density) |
+| `"ghspop"` | `pip install "popcoord[raster]"` | **1975–2030** | Historical & projected population |
 
 ## Age groups
 
